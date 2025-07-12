@@ -1,8 +1,8 @@
 package model
 
 type Advertisement struct {
-	Index        int
-	Name         string
+	Index        int    `db:"id" json:"id"`
+	Name         string `db:"product_name" json:"name"`
 	Description  string
 	Brand        string
 	Category     string
