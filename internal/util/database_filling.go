@@ -245,8 +245,9 @@ func parseCSVRecord(record []string) (model.Advertisement, error) {
 		Price:        price,
 		Currency:     record[6],
 		Stock:        stock,
-		Color:        record[8],
-		Size:         record[9],
-		Availability: record[10],
+		Ean:          record[8],
+		Color:        record[9],
+		Size:         record[10],
+		Availability: record[11],
 	}, nil
 }
