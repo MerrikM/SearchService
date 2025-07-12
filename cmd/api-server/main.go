@@ -1,11 +1,8 @@
 package main
 
 import (
-	"SearchService/internal"
-	"SearchService/internal/handler"
-	"SearchService/internal/util"
+	"SearchService/config"
 	"context"
-	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq" // Импорт драйвера PostgreSQL
 	"log"
 	"net/http"
@@ -15,38 +12,22 @@ import (
 	"time"
 )
 
-var (
-	DB_DRIVER_NAME       = "postgres"
-	DB_CONNECTION_STRING = "postgresql://postgres:root@localhost:5432/search_service?sslmode=disable"
-	SERVER_ADDRESS       = ":8080"
-)
-
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	database, err := internal.NewDatabaseConnection(DB_DRIVER_NAME, DB_CONNECTION_STRING)
-	if err != nil {
-		log.Println(err)
-	}
+	database := config.SetupDatabase()
 	defer database.Close()
 
-	databaseFilling := util.NewDatabaseFilling(database)
-	databaseFillingHandler := handler.NewDatabaseFillingHandler(databaseFilling)
+	httpServer := config.SetupServer(database)
 
-	router := chi.NewRouter()
-	router.Route("/fill_db", func(r chi.Router) {
-		r.Post("/fill_from_csv", databaseFillingHandler.FillDatabaseAsync)
-	})
+	runServer(ctx, httpServer)
+}
 
-	server := &http.Server{
-		Addr:    SERVER_ADDRESS,
-		Handler: router,
-	}
-
+func runServer(ctx context.Context, server *http.Server) {
 	serverErrors := make(chan error, 1)
 	go func() {
-		log.Println("сервер запущен на " + SERVER_ADDRESS)
+		log.Println("Сервер запущен на " + config.ServerAddress)
 		serverErrors <- server.ListenAndServe()
 	}()
 
@@ -61,7 +42,7 @@ func main() {
 			log.Fatalf("ошибка работы сервера: %v", err)
 		}
 	case sig := <-signalChannel:
-		log.Printf("получен сигнал %v, завершаем работу...", sig)
+		log.Printf("Получен сигнал %v, завершаем работу...", sig)
 	}
 
 	// Контекст с таймаутом для graceful shutdown (5 секунд)
@@ -71,6 +52,6 @@ func main() {
 	if err := server.Shutdown(shutdownCtx); err != nil {
 		log.Printf("ошибка при остановке сервера: %v", err)
 	} else {
-		log.Println("сервер успешно остановлен")
+		log.Println("Сервер успешно остановлен")
 	}
 }
