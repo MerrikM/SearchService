@@ -1,6 +1,6 @@
-package indexer
+package util
 
-// Package indexer содержит логику индексации и bulk-индексации объявлений (advertisement) в Elasticsearch
+// indexer содержит логику индексации и bulk-индексации объявлений (advertisement) в Elasticsearch
 
 import (
 	"SearchService/internal/model"
@@ -16,10 +16,15 @@ func indexAdvertisement(esClient *elasticsearch.Client, advertisement *model.Adv
 	body := map[string]interface{}{
 		"id":           advertisement.Index,
 		"product_name": advertisement.Name,
+		"description":  advertisement.Description,
 		"brand":        advertisement.Brand,
 		"category":     advertisement.Category,
 		"price":        advertisement.Price,
+		"currency":     advertisement.Currency,
 		"stock":        advertisement.Stock,
+		"ean":          advertisement.Ean,
+		"color":        advertisement.Color,
+		"size":         advertisement.Size,
 		"availability": advertisement.Availability,
 	}
 
@@ -56,10 +61,15 @@ func bulkIndexAdvertisements(esClient *elasticsearch.Client, advertisements []mo
 		document := map[string]interface{}{
 			"id":           advertisement.Index,
 			"product_name": advertisement.Name,
+			"description":  advertisement.Description,
 			"brand":        advertisement.Brand,
 			"category":     advertisement.Category,
 			"price":        advertisement.Price,
+			"currency":     advertisement.Currency,
 			"stock":        advertisement.Stock,
+			"ean":          advertisement.Ean,
+			"color":        advertisement.Color,
+			"size":         advertisement.Size,
 			"availability": advertisement.Availability,
 		}
 		documentJson, _ := json.Marshal(document)
