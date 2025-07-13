@@ -2,6 +2,8 @@ package main
 
 import (
 	"SearchService/config"
+	"SearchService/internal/handler"
+	"SearchService/internal/repository"
 	"context"
 	_ "github.com/lib/pq" // Импорт драйвера PostgreSQL
 	"log"
@@ -19,7 +21,13 @@ func main() {
 	database := config.SetupDatabase()
 	defer database.Close()
 
-	httpServer := config.SetupServer(database)
+	httpServer, router := config.SetupServer(database)
+
+	esClient := config.SetupElasticSearch()
+	repo := repository.NewElasticRepository(esClient, "advertisements")
+
+	searchHandler := handler.NewSearchHandler(repo)
+	router.Get("/search", searchHandler.SearchInElastic)
 
 	runServer(ctx, httpServer)
 }

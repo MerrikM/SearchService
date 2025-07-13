@@ -18,8 +18,8 @@ package main
 
 import (
 	"SearchService/config"
-	"SearchService/internal/indexer"
 	"SearchService/internal/repository"
+	"SearchService/internal/util"
 	"log"
 )
 
@@ -30,7 +30,7 @@ func main() {
 	esClient := config.SetupElasticSearch()
 	repo := repository.NewAdvertisementRepository(database)
 
-	err := indexer.MigrationAllAdvertisements(esClient, repo)
+	err := util.MigrationAllAdvertisements(esClient, repo)
 	if err != nil {
 		log.Fatalf("ошибка миграции: %v", err)
 	}

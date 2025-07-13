@@ -2,9 +2,6 @@ package config
 
 import (
 	"SearchService/internal"
-	"SearchService/internal/handler"
-	"SearchService/internal/util"
-	"fmt"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
@@ -44,34 +41,6 @@ func init() {
 	ServerAddress = os.Getenv("SERVER_ADDRESS")
 }
 
-type ElasticSearchConfig struct {
-	Addresses []string
-	Username  string
-	Password  string
-}
-
-func newESClient(cfg ElasticSearchConfig) (*elasticsearch.Client, error) {
-	elasticSearchConfig := elasticsearch.Config{
-		Addresses: cfg.Addresses,
-		Username:  cfg.Username,
-		Password:  cfg.Password,
-	}
-
-	client, err := elasticsearch.NewClient(elasticSearchConfig)
-	if err != nil {
-		return nil, fmt.Errorf("ошибка создания клиента: %w", err)
-	}
-
-	response, err := client.Info()
-	if err != nil {
-		return nil, fmt.Errorf("ошибка получения сведений о клиенте: %w", err)
-	}
-
-	defer response.Body.Close()
-
-	return client, nil
-}
-
 func SetupDatabase() *internal.Database {
 	database, err := internal.NewDatabaseConnection(DbDriverName, DbConnectionString)
 	if err != nil {
@@ -97,16 +66,11 @@ func SetupElasticSearch() *elasticsearch.Client {
 	return esClient
 }
 
-func SetupServer(database *internal.Database) *http.Server {
+func SetupServer(database *internal.Database) (*http.Server, *chi.Mux) {
 	router := chi.NewRouter()
-	router.Route("/search", func(r chi.Router) {
-		// Контроллер для миграции данных из csv файла в БД
-		r.Post("/fill_from_csv", handler.NewDatabaseFillingHandler(
-			util.NewDatabaseFilling(database)).FillDatabaseAsync)
-	})
 
 	return &http.Server{
 		Addr:    ServerAddress,
 		Handler: router,
-	}
+	}, router
 }
