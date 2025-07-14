@@ -1,8 +1,8 @@
 package main
 
 import (
-	"SearchService/config"
-	"SearchService/internal/handler"
+	"SearchService/config/server"
+	"SearchService/internal/handler/REST"
 	"SearchService/internal/repository"
 	"context"
 	_ "github.com/lib/pq" // Импорт драйвера PostgreSQL
@@ -18,15 +18,15 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	database := config.SetupDatabase()
+	database := server.SetupDatabase()
 	defer database.Close()
 
-	httpServer, router := config.SetupServer(database)
+	httpServer, router := server.SetupRestServer()
 
-	esClient := config.SetupElasticSearch()
+	esClient := server.SetupElasticSearch()
 	repo := repository.NewElasticRepository(esClient, "advertisements")
 
-	searchHandler := handler.NewSearchHandler(repo)
+	searchHandler := REST.NewSearchHandler(repo)
 	router.Get("/search", searchHandler.SearchInElastic)
 
 	runServer(ctx, httpServer)
@@ -35,7 +35,7 @@ func main() {
 func runServer(ctx context.Context, server *http.Server) {
 	serverErrors := make(chan error, 1)
 	go func() {
-		log.Println("Сервер запущен на " + config.ServerAddress)
+		log.Println("Сервер запущен на " + server.Addr)
 		serverErrors <- server.ListenAndServe()
 	}()
 

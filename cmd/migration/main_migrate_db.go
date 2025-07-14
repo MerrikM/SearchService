@@ -17,17 +17,17 @@ package main
 // Этот процесс можно использовать для первичной инициализации или переиндексации данных.
 
 import (
-	"SearchService/config"
+	"SearchService/config/server"
 	"SearchService/internal/repository"
 	"SearchService/internal/util"
 	"log"
 )
 
 func main() {
-	database := config.SetupDatabase()
+	database := server.SetupDatabase()
 	defer database.Close()
 
-	esClient := config.SetupElasticSearch()
+	esClient := server.SetupElasticSearch()
 	repo := repository.NewAdvertisementRepository(database)
 
 	err := util.MigrationAllAdvertisements(esClient, repo)

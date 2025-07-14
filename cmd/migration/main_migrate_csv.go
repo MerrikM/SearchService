@@ -12,7 +12,7 @@ package main
 //   - util.NewDatabaseFilling — загрузка и вставка данных из CSV
 
 import (
-	"SearchService/config"
+	"SearchService/config/server"
 	"SearchService/internal/util"
 	"flag"
 	"log"
@@ -26,7 +26,7 @@ func main() {
 		log.Fatal("Укажите путь до CSV-файла с помощью флага -csv")
 	}
 
-	database := config.SetupDatabase()
+	database := server.SetupDatabase()
 	defer database.Close()
 
 	dbf := util.NewDatabaseFilling(database)
