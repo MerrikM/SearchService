@@ -15,17 +15,17 @@ func NewAdvertisementRepository(database *internal.Database) *AdvertisementRepos
 }
 
 func (repo *AdvertisementRepository) Save(advertisement *model.Advertisement) (*model.Advertisement, error) {
-	query := `INSERT INTO advertisements (product_name, description, brand, category, price, currency, stock, ean, color, size, availability) 
-				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
+	query := `
+		INSERT INTO advertisements (
+			product_name, description, brand, category, price, currency, stock, ean, color, size, availability
+		)
+		VALUES (
+			:product_name, :description, :brand, :category, :price, :currency, :stock, :ean, :color, :size, :availability
+		)
+		RETURNING id
 	`
 
-	stmt, err := repo.Database.DB.PrepareNamed(query)
-	if err != nil {
-		return nil, fmt.Errorf("ошибка подготовки запроса: %w", err)
-	}
-
-	err = stmt.Get(&advertisement.Index, advertisement)
-	if err != nil {
+	if err := repo.Database.DB.QueryRowx(query, advertisement).Scan(&advertisement.Index); err != nil {
 		return nil, fmt.Errorf("ошибка вставки объявления в БД: %w", err)
 	}
 
