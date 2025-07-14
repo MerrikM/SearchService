@@ -1,4 +1,4 @@
-package config
+package elasticsearch
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ type ElasticSearchConfig struct {
 	Password  string
 }
 
-func newESClient(cfg ElasticSearchConfig) (*elasticsearch.Client, error) {
+func NewESClient(cfg ElasticSearchConfig) (*elasticsearch.Client, error) {
 	elasticSearchConfig := elasticsearch.Config{
 		Addresses: cfg.Addresses,
 		Username:  cfg.Username,

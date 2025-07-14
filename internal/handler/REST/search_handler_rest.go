@@ -1,4 +1,4 @@
-package handler
+package REST
 
 import (
 	"SearchService/internal/model"
